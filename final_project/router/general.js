@@ -80,23 +80,25 @@ public_users.get('/author/:author', async function (req, res) {
 });
 
 // Get all books based on title
-public_users.get('/title/:title', function (req, res) {
-    const title = req.params.title; // Retrieve title from request parameters
-    let booksByTitle = [];
+public_users.get('/title/:title', async function (req, res) {
+    try {
+      const title = req.params.title;  // Get title from URL parameters
   
-    // Iterate through the 'books' object and find books matching the title
-    Object.keys(books).forEach((isbn) => {
-      if (books[isbn].title.toLowerCase() === title.toLowerCase()) {
-        booksByTitle.push(books[isbn]);
+      const response = await axios.get(`https://damisiodumos-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/${title}`);
+      const booksByTitle = response.data;  // Assuming the API returns an array of books with the title
+  
+      // If no books with the given title are found, handle the error
+      if (booksByTitle.length === 0) {
+        return res.status(404).json({ message: "No books found with this title" });
       }
-    });
   
-    if (booksByTitle.length > 0) {
-      return res.status(200).json(booksByTitle); // Return list of books with the given title
-    } else {
-      return res.status(404).json({ message: "No books found with this title" }); // Error if no books match
+      // Send the books with the title as a response
+      return res.status(200).json(booksByTitle);
+    } catch (error) {
+      console.error("Error fetching books by title:", error);
+      return res.status(500).json({ message: "Error fetching books by title" });
     }
-});  
+});
 
 //  Get book review
 public_users.get('/review/:isbn', function (req, res) {

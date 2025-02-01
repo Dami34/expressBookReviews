@@ -24,9 +24,16 @@ public_users.post("/register", (req, res) => {
   });  
 
 // Get the book list available in the shop
-public_users.get('/', function (req, res) {
-  // Returning the list of books as a JSON response
-  return res.json(JSON.stringify(books, null, 2));
+public_users.get('/', async function (req, res) {
+    try {
+      // Make an Axios GET request to the server to get the list of books
+      const response = await axios.get('https://damisiodumos-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/');
+      const books = response.data; // Get the books from the response
+      return res.status(200).json(books); // Send the list of books in the response
+    } catch (error) {
+      // Handle any errors
+      return res.status(500).json({ message: 'Error fetching books', error: error.message });
+    }
 });
 
 // Get book details based on ISBN

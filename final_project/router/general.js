@@ -38,14 +38,24 @@ public_users.get('/', async function (req, res) {
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn', function (req, res) {
-  const isbn = req.params.isbn; // Retrieve ISBN from request parameters
+public_users.get('/isbn/:isbn', async function (req, res) {
+    try {
+      const isbn = req.params.isbn;  // Get ISBN from URL parameters
   
-  if (books[isbn]) {
-    return res.status(200).json(books[isbn]); // Return book details if found
-  } else {
-    return res.status(404).json({ message: "Book not found" }); // Handle invalid ISBN
-  }
+      const response = await axios.get(`https://damisiodumos-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/${isbn}`);
+      const bookDetails = response.data;  // Assuming the API returns the book details object
+  
+      // If the book with the given ISBN is not found, handle the error
+      if (!bookDetails) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+  
+      // Send the book details as a response
+      return res.status(200).json(bookDetails);
+    } catch (error) {
+      console.error("Error fetching book details:", error);
+      return res.status(500).json({ message: "Error fetching book details" });
+    }
 });
   
 // Get book details based on author

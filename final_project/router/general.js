@@ -59,23 +59,25 @@ public_users.get('/isbn/:isbn', async function (req, res) {
 });
   
 // Get book details based on author
-public_users.get('/author/:author', function (req, res) {
-    const author = req.params.author; // Retrieve author from request parameters
-    let booksByAuthor = [];
+public_users.get('/author/:author', async function (req, res) {
+    try {
+      const author = req.params.author;  // Get author from URL parameters
   
-    // Iterate through the 'books' object and find books matching the author
-    Object.keys(books).forEach((isbn) => {
-      if (books[isbn].author === author) {
-        booksByAuthor.push(books[isbn]);
+      const response = await axios.get(`https://damisiodumos-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/${author}`);
+      const booksByAuthor = response.data;  // Assuming the API returns an array of books by the author
+  
+      // If no books by the given author are found, handle the error
+      if (booksByAuthor.length === 0) {
+        return res.status(404).json({ message: "No books found by this author" });
       }
-    });
   
-    if (booksByAuthor.length > 0) {
-      return res.status(200).json(booksByAuthor); // Return list of books by the author
-    } else {
-      return res.status(404).json({ message: "No books found by this author" }); // Error if no books match
+      // Send the books by the author as a response
+      return res.status(200).json(booksByAuthor);
+    } catch (error) {
+      console.error("Error fetching books by author:", error);
+      return res.status(500).json({ message: "Error fetching books by author" });
     }
-  });  
+});
 
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
@@ -94,7 +96,7 @@ public_users.get('/title/:title', function (req, res) {
     } else {
       return res.status(404).json({ message: "No books found with this title" }); // Error if no books match
     }
-  });  
+});  
 
 //  Get book review
 public_users.get('/review/:isbn', function (req, res) {
@@ -105,6 +107,6 @@ public_users.get('/review/:isbn', function (req, res) {
     } else {
       return res.status(404).json({ message: "Book not found" }); // Error if ISBN does not exist
     }
-  });  
+});  
 
 module.exports.general = public_users;
